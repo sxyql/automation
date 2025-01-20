@@ -1,6 +1,7 @@
 ---
 - name: Update and upgrade apt packages
   hosts: all
+  remote_user: root  # Specify root as the user
 
   tasks:
     - name: Update packages with apt
