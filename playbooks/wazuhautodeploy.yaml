@@ -1,0 +1,36 @@
+---
+- name: Deploy Wazuh Agent
+  hosts: all
+  become: yes
+  vars:
+    wazuh_manager: "wazuh.server.lan"  # Replace with your Wazuh Manager hostname
+    wazuh_agent_package_url: "https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-agent/wazuh-agent_4.10.0-1_amd64.deb"
+
+  tasks:
+    - name: Install necessary dependencies
+      apt:
+        name: ["wget"]
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Download Wazuh agent package
+      command: "wget {{ wazuh_agent_package_url }}"
+      args:
+        chdir: "/tmp"
+
+    - name: Install Wazuh agent package
+      command: "sudo WAZUH_MANAGER='{{ wazuh_manager }}' dpkg -i /tmp/wazuh-agent_4.10.0-1_amd64.deb"
+
+    - name: Reload systemd daemon
+      command: "sudo systemctl daemon-reload"
+
+    - name: Enable Wazuh agent service
+      systemd:
+        name: wazuh-agent
+        enabled: yes
+
+    - name: Start Wazuh agent service
+      systemd:
+        name: wazuh-agent
+        state: started
