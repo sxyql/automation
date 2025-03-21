@@ -1,15 +1,21 @@
 ---
-- name: Update and upgrade apt packages
+- name: Update and upgrade apt packages on Debian-based systems
   hosts: all
   remote_user: root  # Specify root as the user
+  become: yes  # Ensure we have root privileges
 
   tasks:
-    - name: Update packages with apt
-      when: ansible_pkg_mgr == 'apt'
-      ansible.builtin.apt:
-        update_cache: true
+    - name: Gather facts
+      ansible.builtin.setup:
+        gather_subset:
+          - os_family  # Only gather the information related to OS family
 
-    - name: Upgrade packages with apt
-      when: ansible_pkg_mgr == 'apt'
-      ansible.builtin.apt:
+    - name: Update packages with apt on Debian-based systems
+      apt:
+        update_cache: yes
+      when: ansible_facts.os_family in ['Debian']
+
+    - name: Upgrade packages with apt on Debian-based systems
+      apt:
         upgrade: dist
+      when: ansible_facts.os_family in ['Debian']
